@@ -33,12 +33,16 @@ void HeapC::unitTest()
 	//Assignment
 	//0.  Explain what each unit test tests
 	
-	// 
+	////////////////////////////////////////////////////////////////////////////
+	// Simply test if allocateBlock and freeBlock work with a string.
+	////////////////////////////////////////////////////////////////////////////
     char *string1 = (char *)allocateBlock(13,4);
     strcpy_s(string1,13,"Hello World!");
     freeBlock(string1);
     
-	
+	////////////////////////////////////////////////////////////////////////////
+	// Test for allocateBlock and freeBlock with 100 random numbers of size byte.
+	////////////////////////////////////////////////////////////////////////////
 	char *randomNumbers = (char *)allocateBlock(100,4);
     char *randomNumbers1 = randomNumbers;
     for (int i=0;i<100;++i)
@@ -47,8 +51,9 @@ void HeapC::unitTest()
     }
     freeBlock(randomNumbers1);
     
-
-	
+	////////////////////////////////////////////////////////////////////////////
+	// Check if the consistency of the blocks is maintained over multiple allocations.
+	////////////////////////////////////////////////////////////////////////////
     char *tempBlock1,*tempBlock2,*tempBlock3;
 
     checkHeapConsistency();
@@ -73,7 +78,9 @@ void HeapC::unitTest()
     checkHeapConsistency();
     assert(getNumBlocks() == 1);
 
-
+	////////////////////////////////////////////////////////////////////////////
+	// Check if the number of blocks stays consistent over multiple allocations and deallocations.
+	////////////////////////////////////////////////////////////////////////////
     tempBlock1 = (char *)allocateBlock(500,4);
     tempBlock2 = (char *)allocateBlock(500,4);
     tempBlock3 = (char *)allocateBlock(500,4);
@@ -89,7 +96,9 @@ void HeapC::unitTest()
     checkHeapConsistency();
     assert(getNumBlocks() == 1);
 
-
+	////////////////////////////////////////////////////////////////////////////
+	// Test to see if the allocateBlock allocates the correct amount of memory.
+	////////////////////////////////////////////////////////////////////////////
     int freeMemory = getLargestFreeBlock();
     assert(getSize()== freeMemory);
 
@@ -126,7 +135,9 @@ void HeapC::unitTest()
 #ifdef _DEBUG
     char *tempBlock4,*tempBlock5,*tempBlock6;
 
-
+	////////////////////////////////////////////////////////////////////////////
+	// Test to see if the debug logs are written to in the allocateBlock call. And check if behaviour of allocations and deallocations is recorded.
+	////////////////////////////////////////////////////////////////////////////
     tempBlock1 = (char *)allocateBlock(500,__FILE__,__LINE__,"unit test 1",0,4);
     tempBlock2 = (char *)allocateBlock(500,__FILE__,__LINE__,"unit test 2",0,4);
     tempBlock3 = (char *)allocateBlock(500,__FILE__,__LINE__,"unit test 3",0,4);
@@ -163,8 +174,9 @@ void HeapC::unitTest()
     assert(getSize() == freeMemory);
     assert(getNumFreeBlocks() == 1);
 
-
-
+	////////////////////////////////////////////////////////////////////////////
+	// Stress test for the memory manager that will allocate and deallocate 1000 pointers and dump the heap to a file, each time.
+	////////////////////////////////////////////////////////////////////////////
     tempBlock1 = (char *)allocateBlock(500,__FILE__,__LINE__,"unit test 1",0,4);
     tempBlock2 = (char *)allocateBlock(500,__FILE__,__LINE__,"unit test 2",0,4);
     tempBlock3 = (char *)allocateBlock(500,__FILE__,__LINE__,"unit test allocation 3",0,4);
