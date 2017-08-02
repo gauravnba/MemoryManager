@@ -2,6 +2,9 @@
 class HeapManagerC;
 //Assignment
 //2. Describe HeapC Class
+////////////////////////////////////////////////////////////////////////////
+// The Heap class manages a heap. It uses blocks, obtained by the user to allocate or free memory.
+////////////////////////////////////////////////////////////////////////////
 class HeapC
 {
 public:
@@ -26,6 +29,9 @@ public:
 
 //Assignment
 //3. Describe memBlockT structure
+////////////////////////////////////////////////////////////////////////////
+// The memBlockT structure is a header like structure that each block will own, which contains information about the block itself and references to its adjacent blocks.
+////////////////////////////////////////////////////////////////////////////
 #define FREE_FLAG 0
     typedef struct 
     {

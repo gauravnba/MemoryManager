@@ -15,7 +15,7 @@ void initOpenGLDrawing( GL_Window *window, Keys *keys, float backRed, float back
 	glClearDepth(1.0f);											// Depth Buffer Setup
 	glDepthFunc(GL_LEQUAL);										// Type Of Depth Testing
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);			// Enable Alpha Blending
-	glEnable(GL_DEPTH_TEST);									// Enable Depth Testing
+	// glEnable(GL_DEPTH_TEST);									// Enable Depth Testing
 	glEnable(GL_BLEND);											// Enable Blending
 	glEnable(GL_TEXTURE_2D);									// Enable Texture Mapping
 	glEnable(GL_CULL_FACE);										// Remove Back Face

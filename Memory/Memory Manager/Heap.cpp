@@ -32,12 +32,11 @@ void HeapC::unitTest()
 {
 	//Assignment
 	//0.  Explain what each unit test tests
-
 	
+	// 
     char *string1 = (char *)allocateBlock(13,4);
     strcpy_s(string1,13,"Hello World!");
     freeBlock(string1);
-
     
 	
 	char *randomNumbers = (char *)allocateBlock(100,4);
@@ -237,6 +236,9 @@ void HeapC::unitTest()
 
 //Assignment
 //4. Describe function
+////////////////////////////////////////////////////////////////////////////
+// Get the number of blocks in the application that are marked free.
+////////////////////////////////////////////////////////////////////////////
 int HeapC::getNumFreeBlocks()
 {
     int count = 0;
@@ -257,6 +259,9 @@ int HeapC::getNumFreeBlocks()
 
 //Assignment
 //6. Describe function
+////////////////////////////////////////////////////////////////////////////
+// Get the amount of free memory in the heap in bytes.
+////////////////////////////////////////////////////////////////////////////
 int HeapC::getTotalFreeMemory()
 {
     int bytes = 0;
@@ -275,6 +280,9 @@ int HeapC::getTotalFreeMemory()
 }
 //Assignment
 //7. Describe function
+////////////////////////////////////////////////////////////////////////////
+// Iterate through all the free blocks and returns the largest one that is free.
+////////////////////////////////////////////////////////////////////////////
 int HeapC::getLargestFreeBlock()
 {
     int largestBlock = 0;
@@ -297,19 +305,31 @@ int HeapC::getLargestFreeBlock()
 
 //Assignment
 //8. Describe function - when is it called and why?
+////////////////////////////////////////////////////////////////////////////
+// Only called in the init of the heap, because this initializes the first block in the heap ie it allocates the memory for the full heap.
+////////////////////////////////////////////////////////////////////////////
 void HeapC::initFirstBlock()
 {
 //Assignment
 //9. Describe line
+	////////////////////////////////////////////////////////////////////////////
+	// Set the start of the heap as the first block.
+	////////////////////////////////////////////////////////////////////////////
     memBlockT *addr = (memBlockT *)mHeapStart;
     
 //Assignment
 //10. Describe 2 lines
+	////////////////////////////////////////////////////////////////////////////
+	// Set the flag of the first block to free.
+	////////////////////////////////////////////////////////////////////////////
     addr->flags = NULL;
     this->setFlag(FREE_FLAG,addr);
     
 //Assignment
 //11. Describe 2 lines
+	////////////////////////////////////////////////////////////////////////////
+	// The nextBlock and prevBlock point to nothing, hence initialize as null.
+	////////////////////////////////////////////////////////////////////////////
     addr->nextBlock = NULL;
     addr->prevBlock = NULL;
 #if _DEBUG
@@ -320,12 +340,18 @@ void HeapC::initFirstBlock()
 #endif
 //Assignment
 //12. Describe 2 lines
+	////////////////////////////////////////////////////////////////////////////
+	// Since only the first block exists on the heap, and it is free, both the first and last free blocks should point to the first block.
+	////////////////////////////////////////////////////////////////////////////
     mFirstFreeBlock = addr;
     mLastFreeBlock = addr;
 }
 
 //Assignment
 //12. Describe function
+////////////////////////////////////////////////////////////////////////////
+// Checks if the number of blocks on the heap and the cached members of the heap are consistent.
+////////////////////////////////////////////////////////////////////////////
 bool HeapC::checkHeapConsistency()
 {
     memBlockT *addr = (memBlockT *)mHeapStart;
@@ -339,21 +365,31 @@ bool HeapC::checkHeapConsistency()
         prev = addr;
         addr = (memBlockT *)addr->nextBlock;
     }
+	volatile int count1 = count;
     assert(count == mNumBlocks);
 
     return true;
 }
 //Assignment
 //13. Describe Function
+////////////////////////////////////////////////////////////////////////////
+// Given the pointer 'ptr', find the location of the start of the block, considering the overhead.
+////////////////////////////////////////////////////////////////////////////
 HeapC::memBlockT *HeapC::findBeginningOfMemoryBlockFromPointer(void *ptr)
 {
 //Assignment
 //14. Explain 2 Lines
+	////////////////////////////////////////////////////////////////////////////
+	// Cast 'ptr' as a long, so that it can be decremented.
+	////////////////////////////////////////////////////////////////////////////
     long *tempPtr = (long *)ptr;
     tempPtr--;
 
 //Assignment
 //15. Explain loop
+	////////////////////////////////////////////////////////////////////////////
+	// If 'tempPtr' doesn't point to the start of the block, move to start of the block.
+	////////////////////////////////////////////////////////////////////////////
     while(*tempPtr==0)
     {
         tempPtr--;
@@ -362,6 +398,9 @@ HeapC::memBlockT *HeapC::findBeginningOfMemoryBlockFromPointer(void *ptr)
 
 //Assignment
 //16. Explain line
+	////////////////////////////////////////////////////////////////////////////
+	// Get the pointer to the beginning of the block, by moving it to the start of the blockOverhead.
+	////////////////////////////////////////////////////////////////////////////
     memBlockT *retPtr = (memBlockT *)((int)tempPtr - getFrontBlockOverhead());
 
     return retPtr;
@@ -370,6 +409,10 @@ HeapC::memBlockT *HeapC::findBeginningOfMemoryBlockFromPointer(void *ptr)
 #ifdef _DEBUG
 //Assignment
 //17. Why debug version?
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// The debug version of the allocateBlock writes additional debug info to debug file. 
+// Since we're running the program in debug mode, we need the debug info. In release mode, the file will not be written to.
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void *HeapC::allocateBlock(int bytes,char *filename,int lineNumber,char *tag,int time,int alignment)
 {
     void *thisBlock = allocateBlock(bytes, alignment);
@@ -412,13 +455,15 @@ int HeapC::powerOfTwo(int val)
         (val==(1<<13)) ||
         (val==(1<<14)) ||
         (val==(1<<15))
-        );  
+        );
 
     return val;
 }
 //Assignment
 //18.  Describe function
-
+/////////////////////////////////////////////////////////////////////////////
+// Allocates a block of size 'bytes' in this heap, aligned along 'alignment'.
+/////////////////////////////////////////////////////////////////////////////
 void *HeapC::allocateBlock(int bytes, int alignment)
 {
     bytes = (bytes+3)&(0xFFFFFFFF-3);   //always ask for a multiple of 4 bytes just to simplify life
@@ -428,32 +473,52 @@ void *HeapC::allocateBlock(int bytes, int alignment)
 
 //Assignment
 //19.  Describe computation
+	////////////////////////////////////////////////////////////////////////////
+	// Computes the offset required to align the block.
+	// The alignment of bits has to be a power of two.
+	////////////////////////////////////////////////////////////////////////////
     int alignmentOffset;  //how many more bytes to ask for in case we need to align
     if(alignment==4)
         alignmentOffset = 0;
     else
         alignmentOffset = powerOfTwo(alignment);
     
-    
 //Assignment
 //20.  Describe line
+	////////////////////////////////////////////////////////////////////////////
+	// The actual number of bytes that will be allocated on the heap.
+	// Calculated by added the alignmentOffset with the Maximum overhead we are allowing per block.
+	////////////////////////////////////////////////////////////////////////////
     int actualBytesNeeded = bytes  + getBlockOverhead() + alignmentOffset;
 
 //Assignment
 //21.  Describe line
+	////////////////////////////////////////////////////////////////////////////
+	// Create memBlockT pointer 'addr' that points to the first free address in the heap.
+	// The oldNextBlock is a memBlockT pointer that will be a reference to the next possible block.
+	////////////////////////////////////////////////////////////////////////////
     memBlockT *addr = mFirstFreeBlock;
     memBlockT *oldNextBlock;
 
 //Assignment
 //22.  Describe loop
+	////////////////////////////////////////////////////////////////////////////
+	// Loop till a valid block is found.
+	////////////////////////////////////////////////////////////////////////////
     while(!blockFound)
     {
 //Assignment
 //23.  Describe line
+		////////////////////////////////////////////////////////////////////////////
+		// Check if addr is a free block in the heap.
+		////////////////////////////////////////////////////////////////////////////
         if(getFlag(FREE_FLAG,addr))
         {
 //Assignment
 //24.  Describe compare
+			////////////////////////////////////////////////////////////////////////////
+			// Check if the 'addr' block size is bigger than the amount of space needed to be allocated.
+			////////////////////////////////////////////////////////////////////////////
             if(calcBlockSize(addr) > (actualBytesNeeded + getBlockOverhead()))
             {
                 //found a block big enough!
@@ -463,18 +528,33 @@ void *HeapC::allocateBlock(int bytes, int alignment)
                 //by looking at the start address and alignment and reducing the size
 //Assignment
 //25. Why would this be a bad thing to do?
+				////////////////////////////////////////////////////////////////////////////
+				// It would be a bad idea to reduce the block size at this point, because the blockOverhead needed for the block is not yet applied to addr.
+				////////////////////////////////////////////////////////////////////////////
 
 //Assignment
 //26.  Describe line
+				////////////////////////////////////////////////////////////////////////////
+				// Since we found a block big enough, assign 'retBlock' the memory address to return as 'addr'.
+				////////////////////////////////////////////////////////////////////////////
                 retBlock = addr;
 //Assignment
 //27.  Describe line
+				////////////////////////////////////////////////////////////////////////////
+				// 'oldNextBlock' is assigned as the block after 'addr'
+				////////////////////////////////////////////////////////////////////////////
                 oldNextBlock = (memBlockT *)addr->nextBlock;
 //Assignment
 //28.  Describe line
+				////////////////////////////////////////////////////////////////////////////
+				// The address that 'nextBlock' is pointing to, is moved to the end of the current block.
+				////////////////////////////////////////////////////////////////////////////
                 addr->nextBlock = (void *)((int)addr + (int)actualBytesNeeded);
 //Assignment
 //29.  Describe line
+				////////////////////////////////////////////////////////////////////////////
+				// Clear the flag of the 'addr' from garbage to free.
+				////////////////////////////////////////////////////////////////////////////
                 clearFlag(FREE_FLAG,addr);
                 //set the heapID
                 setHeapID(addr,mHeapID);
@@ -499,11 +579,15 @@ void *HeapC::allocateBlock(int bytes, int alignment)
                     //if this wasn't the last block, set the prev block of the next block to be the newly created block
                     if(oldNextBlock!=NULL)
                     {
-
 //Assignment - comment in and what should it = ?                        oldNextBlock->prevBlock = ????;
+////////////////////////////////////////////////////////////////////////////
+//The prev block of the next block should be the newly created block.
+////////////////////////////////////////////////////////////////////////////
+						oldNextBlock->prevBlock = addr;
                     }
 					//Assignment
-					//removed a line here
+					// Increment the number of blocks in the heap.
+					++mNumBlocks;
                 }
             }
         }
@@ -515,9 +599,20 @@ void *HeapC::allocateBlock(int bytes, int alignment)
 		//comment 2 lines below in and fill in conditions
         //if((??) && ??)
         //    assert(0); //no large enough blocks
+
+		////////////////////////////////////////////////////////////////////////////
+		// If reached the end of the heap and the block was still not found, crash.
+		////////////////////////////////////////////////////////////////////////////
+		if ((addr == NULL) && !blockFound)
+		{
+			assert(0);
+		}
     }
 //Assignment
 //30.  Why isn't the retVal just the address of the block?
+	////////////////////////////////////////////////////////////////////////////
+	// The return value needs to be the usable address, where the user can store the data that they need to.
+	////////////////////////////////////////////////////////////////////////////
     int returnPointerVal = ((int)retBlock+getFrontBlockOverhead());
     //setup for clearing memory for alignment
     long *origPtr = (long *)returnPointerVal;
@@ -557,9 +652,15 @@ void HeapC::freeBlock(void *ptr)
 {
 //Assignment
 //31.  Describe line
+	////////////////////////////////////////////////////////////////////////////
+	// Gets the actual beginning of the block, accounting for the blockOffset and assigns to 'thisBlock'
+	////////////////////////////////////////////////////////////////////////////
     memBlockT *thisBlock = (memBlockT *)((int)findBeginningOfMemoryBlockFromPointer(ptr));
 //Assignment
 //32.  Describe what it would mean if this assert fired...
+	////////////////////////////////////////////////////////////////////////////
+	// If this assert fired, it means the user tried to free an already free block.
+	////////////////////////////////////////////////////////////////////////////
     assert(!isFree(thisBlock));
     //check consistency ? not doing anything right now but wanted to have a placeholder in case
     blockConsistencyCheck(thisBlock);
@@ -573,6 +674,9 @@ void HeapC::freeBlock(void *ptr)
     makeFree(thisBlock);
 //Assignment
 //33.  Describe compare
+	////////////////////////////////////////////////////////////////////////////
+	// Check if 'mFirstFreeBlock' is ahead of thisBlock. If so, assign it to this block.
+	////////////////////////////////////////////////////////////////////////////
     if(thisBlock < mFirstFreeBlock)
     {
         mFirstFreeBlock = thisBlock;
@@ -580,6 +684,9 @@ void HeapC::freeBlock(void *ptr)
 
 //Assignment
 //34.  Describe following 8 lines
+	////////////////////////////////////////////////////////////////////////////
+	// If the nextBlock is also free, combine the two free blocks into a single free block.
+	////////////////////////////////////////////////////////////////////////////
     memBlockT *nextBlock = (memBlockT *)thisBlock->nextBlock;
     if(nextBlock != NULL)
     {
@@ -590,6 +697,9 @@ void HeapC::freeBlock(void *ptr)
     }
 //Assignment
 //35.  Describe following 11 lines
+	////////////////////////////////////////////////////////////////////////////
+	// If the prevBlock is also free, combine the two free blocks into a single free block, and move the mFirstFreeBlock to point to the start of prevBlock.
+	////////////////////////////////////////////////////////////////////////////
     memBlockT *prevBlock = (memBlockT *)thisBlock->prevBlock;
     if(prevBlock != NULL)
     {
@@ -700,16 +810,25 @@ void HeapC::clearBlock(memBlockT *block)
 
 //Assignment
 //36. Describe function
+////////////////////////////////////////////////////////////////////////////
+// Combines two free, contiguous blocks into a single free block.
+////////////////////////////////////////////////////////////////////////////
 void HeapC::combineBlocks(memBlockT *firstBlock,memBlockT *secondBlock)
 {
 
 //Assignment
 //37. Describe asserts
+	////////////////////////////////////////////////////////////////////////////
+	// Check that the 'firstBlock' is located before the 'secondBlock' and that they are both free, contiguous blocks.
+	////////////////////////////////////////////////////////////////////////////
     assert((int)firstBlock < (int)secondBlock);
     assert(firstBlock->nextBlock == secondBlock);
     assert(isFree(firstBlock) && isFree(secondBlock));
 //Assignment
 //38. Describe line
+	////////////////////////////////////////////////////////////////////////////
+	// Set the 'nextBlock' of first block, the 'nextBlock' of second block, because the 'nextBlock' of the combined block will point to that one.
+	////////////////////////////////////////////////////////////////////////////
     firstBlock->nextBlock = secondBlock->nextBlock;
     if(secondBlock->nextBlock!=NULL)
     {
@@ -719,7 +838,7 @@ void HeapC::combineBlocks(memBlockT *firstBlock,memBlockT *secondBlock)
     //clear out the newly created block
     clearBlock(firstBlock);
 //Assignment
-//Removed a line
+	--mNumBlocks;
 }
 
 int HeapC::calcBlockSize(memBlockT *addr)
